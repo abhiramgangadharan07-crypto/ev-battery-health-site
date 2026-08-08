@@ -1,0 +1,7 @@
+# Required to run analysis.ipynb
+pandas
+numpy
+matplotlib
+scikit-learn
+jupyter
+nbconvert

@@ -12,3 +12,7 @@ Thumbs.db
 *.png
 !assets/result_plot.png
 !assets/screenshot.png
+!images/result_plot.png
+
+# dataset (downloaded by the student from Kaggle, too large to commit)
+data/

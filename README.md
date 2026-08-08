@@ -1,19 +1,19 @@
 <div align="center">
 
-# EV Battery Lab — State of Health Predictor
+# EV Battery Health Prediction — State of Health with Linear Regression
 
-**Estimate the remaining life of an EV battery pack — directly in your browser.**
+**Predict how much life an EV battery has left — from charging and usage data — with a Linear Regression model.**
 
-A live, fully static web application that predicts the **State of Health (SoH)** of an electric-vehicle battery from ten everyday sensor readings, using a linear regression model trained on **2,000 real battery samples**. No server, no upload, no API keys — the entire model ships with the site and runs client-side.
+This repository contains a complete, submission-ready machine learning project: the full notebook pipeline (`analysis.ipynb`), real results (R² = 0.984), and — as a bonus — a live interactive demo of the model running in the browser.
 
-[![Live demo](https://img.shields.io/badge/LIVE%20DEMO-GitHub%20Pages-3FBF5F?style=for-the-badge&logo=github)](https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/)
-[![R² score](https://img.shields.io/badge/R%C2%B2-0.9967-2e9b4a?style=for-the-badge)](https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/)
-[![RMSE](https://img.shields.io/badge/RMSE-1.08%20pp-D95D3F?style=for-the-badge)](https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/)
-[![Samples](https://img.shields.io/badge/trained%20on-2000%20samples-E8A13C?style=for-the-badge)](https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/)
+[![Dataset](https://img.shields.io/badge/dataset-EV%20Battery%20Degradation%20%26%20Charge-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/datasets/bertnardomariouskono/electric-vehicle-ev-battery-degradation-and-charge)
+[![R² score](https://img.shields.io/badge/R%C2%B2-0.984-2e9b4a?style=for-the-badge)](analysis.ipynb)
+[![RMSE](https://img.shields.io/badge/RMSE-0.41%20pp-D95D3F?style=for-the-badge)](analysis.ipynb)
+[![Samples](https://img.shields.io/badge/10%2C000%20samples-%E2%80%93-E8A13C?style=for-the-badge)](https://www.kaggle.com/datasets/bertnardomariouskono/electric-vehicle-ev-battery-degradation-and-charge)
 
-[![Built with](https://img.shields.io/badge/HTML5-CSS3-JavaScript-F6F1E7?style=for-the-badge&logo=html5&logoColor=1C3A2E)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![Three.js](https://img.shields.io/badge/Three.js-r128-000000?style=for-the-badge&logo=threedotjs)](https://threejs.org/)
 [![Model](https://img.shields.io/badge/sklearn-LinearRegression-F7931E?style=for-the-badge&logo=scikitlearn)](https://scikit-learn.org/)
+[![Notebook](https://img.shields.io/badge/Jupyter-analysis.ipynb-F37626?style=for-the-badge&logo=jupyter)](analysis.ipynb)
+[![Demo](https://img.shields.io/badge/LIVE%20DEMO-GitHub%20Pages-3FBF5F?style=for-the-badge&logo=github)](https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/)
 [![License](https://img.shields.io/badge/License-MIT-1C3A2E?style=for-the-badge)](LICENSE)
 
 </div>
@@ -22,188 +22,179 @@ A live, fully static web application that predicts the **State of Health (SoH)**
 
 ## Table of contents
 
-- [Overview](#overview)
-- [Screenshot](#screenshot)
-- [Features](#features)
-- [How the prediction works](#how-the-prediction-works)
-- [Performance](#performance)
-- [Tech stack](#tech-stack)
-- [Getting started](#getting-started)
-- [Project structure](#project-structure)
-- [Regenerating the model data](#regenerating-the-model-data)
-- [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
+- [1. Research problem](#1-research-problem)
+- [2. Dataset](#2-dataset)
+- [3. Methodology](#3-methodology)
+- [4. Results](#4-results)
+- [5. The notebook, cell by cell](#5-the-notebook-cell-by-cell)
+- [6. How to run](#6-how-to-run)
+- [7. Repository structure](#7-repository-structure)
+- [8. Interactive demo (website)](#8-interactive-demo-website)
+- [9. Troubleshooting](#9-troubleshooting)
 - [Author](#author)
 - [License](#license)
 - [Credits](#credits)
 
-## Overview
+---
 
-Every time an EV battery is charged, discharged, or thermally stressed, it permanently loses a tiny slice of its capacity. The **State of Health (SoH)** is the standard measure of how much of its original capacity remains — a new battery starts near 100% and is generally considered **end of life at 80%**.
+## 1. Research problem
 
-This project answers a practical question: *can we estimate SoH without expensive laboratory equipment, using only the sensor readings a battery management system already records?*
-
-Yes — with a single linear model. This repository is the interactive companion to the [EV Battery Health Prediction](https://github.com/abhiramgangadharan07-crypto/ev-battery-health-prediction) machine-learning project:
-
-- **10 sensor features** (cycle count, voltage, current, temperature, …) → **one SoH prediction**
-- Trained on **2,000 samples** with `scikit-learn` (`LinearRegression`, `random_state=42`)
-- **R² = 0.9967** and **RMSE = 1.08 percentage points** on 400 unseen test samples
-- The trained model ships as a single JSON file, so the site runs the full prediction **in your browser** with zero backend
-
-## Screenshot
-
-![Full-page preview of the EV Battery Lab site](assets/screenshot.png)
-
-## Features
-
-### 1. 360° 3D EV showcase
-
-A draggable, auto-rotating 3D car (Three.js + a Draco-compressed GLB decoded locally) sits in the hero. Drag to inspect from any angle — the car resumes orbiting when you let go.
-
-### 2. Live SoH diagnosis
-
-Ten sliders, ranged from the real dataset's minimum/maximum, feed the model as you move them. The prediction updates **instantly** client-side, and a 3D battery fills or drains to your result, shifting from **green (healthy)** through **amber (degraded)** to **terracotta (end of life)**.
-
-### 3. 3D data landscape
-
-All 2,000 training samples are rendered as a rotatable point cloud (Cycle × Temperature × SoH); color encodes health exactly as in the battery visualisation.
-
-### 4. Full methodology, in plain language
-
-The site includes the complete regression story — the pipeline (load → inspect → clean → encode → split → train → evaluate → visualise), the metric explanations, and the full precision coefficient table.
-
-## How the prediction works
-
-A linear regression makes a prediction by multiplying each feature by a learned coefficient, adding them all up, and adding an intercept. For this model:
+An EV battery degrades every time it is charged, discharged, and thermally stressed. The **State of Health (SoH)** measures how much of its original capacity a battery still has:
 
 ```
-SoH = 94.498
-    − 0.0322 × Cycle
-    − 0.0997 × Voltage
-    − 0.0639 × Current
-    − 0.0224 × Temperature
-    − 0.0009 × ChargeTime
-    − 0.0014 × DischargeTime
-    + 2.3856 × InternalResistance
-    − 0.0972 × Capacity
-    − 0.0003 × AmbientHumidity
-    + 0.0562 × C_Rate
+SoH (%) = (current maximum capacity / nominal capacity when new) × 100
 ```
 
-**Worked example** — a typical mid-life pack with the dataset's average readings (Cycle 1,000, Voltage 3.59 V, Current 1.24 A, Temperature 25.3 °C, …):
+A battery starts at ~100% and is typically considered **"end of life" around 80%**. Estimating SoH from everyday data (charge cycles, temperature, age, chemistry) matters for three practical reasons:
 
-```
-SoH ≈ 94.498
-    − 32.229   (Cycle)
-    − 0.358    (Voltage)
-    − 0.079    (Current)
-    − 0.567    (Temperature)
-    − 0.069    (ChargeTime)
-    − 0.107    (DischargeTime)
-    + 0.358    (InternalResistance)
-    − 0.194    (Capacity)
-    − 0.017    (AmbientHumidity)
-    + 0.071    (C_Rate)
-    = 61.3%    (predicted SoH)
-```
+1. **Safety** — a degraded battery is more likely to overheat, swell, or fail unpredictably. Monitoring SoH helps detect dangerous cells early.
+2. **Resale value** — the biggest single factor deciding a used EV's price is the remaining health of its battery. Buyers and sellers need an honest estimate.
+3. **Maintenance planning** — knowing how fast a pack is losing capacity lets owners and fleet operators schedule replacements or warranty claims before the battery leaves the vehicle.
 
-**Reading the coefficients:** `Cycle` dominates (−0.032 per cycle — each full charge/discharge cycle costs about 0.03 percentage points of health); `Temperature` (−0.022 per °C) shows thermal stress ages the pack; `InternalResistance` is the strongest positive term (+2.386), because a freshly rebuilt estimate correlates with the resistance reading this dataset records for healthier cells. `ChargeTime`, `DischargeTime` and `AmbientHumidity` are near-zero — they refine the estimate without changing the story.
+SoH estimation is a textbook **regression** problem: the target is a continuous number, and we predict it from measurable features.
 
-The coefficients are stored **full precision** in `assets/model.json`; the on-page calculator (`js/app.js`) and the Python export (`export_model.py`) are cross-checked by `crosscheck.py` to a difference of ~1e-14 — so the number you see in the browser is the number scikit-learn produced.
+## 2. Dataset
 
-## Performance
+- **Name:** Electric Vehicle (EV) Battery Degradation & Charge
+- **Owner / link:** [Kaggle — bertnardomariouskono](https://www.kaggle.com/datasets/bertnardomariouskono/electric-vehicle-ev-battery-degradation-and-charge)
+- **Size:** 10,000 battery samples × 13 columns, no missing values
+- **Chemistry:** NMC (nickel–manganese–cobalt) and LFP (lithium-iron-phosphate) — encoded via the `Battery_Type` column
+- **Features:** battery capacity (kWh), vehicle age (months), total charging cycles, average temperature (°C), fast-charge ratio, discharge rate (C), internal resistance (Ω), driving style, car model, battery status
+- **Target:** `SoH_Percent` (State of Health, %) — continuous, used as-is for regression; the notebook also detects any column named *soh* automatically
 
-Evaluated on **400 samples** the model never saw during training:
+The CSV is downloaded from Kaggle (account required) and placed in `data/` — the notebook finds it automatically, whatever its name.
 
-| Metric | Value | Meaning |
-| ------ | ----- | ------- |
-| **R² (coefficient of determination)** | **0.9967** | The model explains 99.67% of the variation in battery health |
-| **RMSE (root mean square error)** | **1.08 pp** | Typical predictions are within ±1 percentage point of true SoH |
-| Training samples | 1,600 | 80% of the dataset |
-| Test samples | 400 | 20% held out with `random_state=42` |
+## 3. Methodology
 
-The evaluation scatter plot (actual vs predicted, with the perfect-prediction diagonal) is included in the site and in the companion project.
+The pipeline in `analysis.ipynb` follows these steps:
 
-## Tech stack
+| Step | What we do | Why |
+| ---- | ---------- | --- |
+| **Load** | `pd.read_csv()` + `df.head()` | Verify the data was read correctly |
+| **Inspect** | print `df.shape`, `df.dtypes`, missing values, `df.describe()` | Check data before modelling |
+| **Clean** | select the `SoH_Percent` target, drop the `Vehicle_ID` ID column, drop rows with missing values | IDs carry no information; models cannot learn from empty cells |
+| **Encode** | one-hot encode the text columns — `Battery_Type` (NMC/LFP), `Car_Model`, `Driving_Style`, `Battery_Status` — with `pd.get_dummies(..., drop_first=True)` | sklearn only accepts numbers; each category becomes its own 0/1 column |
+| **Split** | `train_test_split(X, y, test_size=0.2, random_state=42)` | Train on 80%, test on the 20% the model never saw |
+| **Train** | `LinearRegression().fit(X_train, y_train)` | Find the coefficients that best explain SoH |
+| **Evaluate** | `r2_score` and RMSE on the test set | Measure how well the model generalises |
+| **Visualise** | scatter plot actual vs predicted SoH + perfect-prediction diagonal, saved to `images/result_plot.png` | Sanity-check the model visually |
 
-| Layer | Technology |
-| ----- | ---------- |
-| Markup & styling | Semantic HTML5, hand-written CSS (paper & forest-green editorial theme, responsive) |
-| 3D rendering | Three.js r128 (car, battery fill, point cloud) + vendored Draco decoder for the GLB |
-| Prediction | Vanilla JavaScript — a single weighted sum over exported coefficients |
-| Model training | Python 3 · scikit-learn · pandas · numpy · matplotlib |
-| Hosting | GitHub Pages (free static hosting, auto-deployed on push) |
+### Why Linear Regression fits this problem
 
-## Getting started
+- Battery capacity fades **roughly linearly** with usage (cycles, age): over the observed range the relationship is near-linear, so a linear model is a theoretically sound baseline.
+- It is **interpretable**: each fitted coefficient tells us the direction and size of a factor's effect (e.g. how many percentage points one more charging cycle costs).
+- It is fast, has no hyper-parameters, and is the standard benchmark every more complex model is compared against.
 
-**Requirements**
+## 4. Results
 
-- A modern browser with WebGL enabled (Chrome, Firefox, Safari, Edge)
-- Python 3.9+ — only needed to serve the site locally or regenerate the model files
+The model was trained on **8,000** of the 10,000 samples and evaluated on the **2,000** unseen ones (`random_state=42`). The values below are the *actual outputs* of the notebook:
 
-**Run locally**
+| Metric | Value | What it means |
+| ------ | ----- | ------------- |
+| **R² (R-squared)** | **0.984** | The model explains 98.4% of the variation in battery health in the test set — an excellent fit. |
+| **RMSE** | **0.413 pp** | The average prediction error is about **±0.41 percentage points** of SoH. |
+
+**In plain language:** given a battery's charging/usage readings and its chemistry, the model can estimate its State of Health to within about half a percentage point — good enough to flag end-of-life batteries reliably (`SoH < 80%`).
+
+### Evaluation plot
+
+![Linear Regression: actual vs predicted SoH](images/result_plot.png)
+
+The red dashed diagonal is the **perfect prediction** line (`y = x`). Each dot is one test battery. The closer the dots hug the diagonal, the more accurate the model — and here the band is remarkably tight.
+
+## 5. The notebook, cell by cell
+
+For students, `analysis.ipynb` is written to be read and explained:
+
+| Cells | Content |
+| ----- | ------- |
+| 1 | Import the libraries: pandas, numpy, matplotlib, sklearn |
+| 2–3 | Load the CSV (auto-detected in `data/`) and look at `df.head()` |
+| 4 | Inspect: shape, dtypes, missing values, `describe()` |
+| 5 | Clean & encode: pick the concentration target, drop IDs, one-hot the categoricals |
+| 6 | Train/test split: 80/20, `random_state=42` |
+| 7 | Train: `LinearRegression().fit(X_train, y_train)` |
+| 8 | Evaluate: prints R² and RMSE with a plain-language summary |
+| 9–10 | Plot actual vs predicted with the diagonal, save to `images/result_plot.png` |
+
+Every cell has a short comment above it explaining what it does and why.
+
+## 6. How to run
+
+**Requirements:** Python 3.9+, Jupyter, and the libraries in `requirements.txt`.
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/abhiramgangadharan07-crypto/ev-battery-health-site.git
 cd ev-battery-health-site
-python -m http.server 8000
-# open http://127.0.0.1:8000
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Download the dataset from Kaggle (link in section 2)
+#    and place the CSV inside the data/ folder
+
+# 4a. Interactive: open the notebook
+jupyter notebook
+#     -> open analysis.ipynb, select Cell > Run All
+
+# 4b. Or headless (re-runs and saves outputs):
+jupyter nbconvert --to notebook --execute --inplace analysis.ipynb
 ```
 
-> A plain `file://` double-click won't work — browsers block `fetch` on local files for security.
+The narrative plot is regenerated automatically at `images/result_plot.png`.
 
-## Project structure
+> Optional: the same repo also contains the interactive website. You can serve it with `python -m http.server 8000` and open `http://127.0.0.1:8000` (see section 8) — or just open the live demo.
+
+## 7. Repository structure
 
 ```
 ev-battery-health-site/
-├── index.html              # the site itself
-├── css/style.css           # paper & forest-green editorial theme
+├── analysis.ipynb          # THE ML ASSIGNMENT — full pipeline, commented cell by cell
+├── README.md               # this file
+├── requirements.txt        # Python dependencies for the notebook
+├── LICENSE                 # MIT
+├── .gitignore              # keeps the data/ CSV out of Git
+├── data/                   # (your download) ev_battery_degradation_v1.csv goes here — not committed
+├── images/
+│   └── result_plot.png     # generated by the notebook, embedded above
+│
+├── index.html              # interactive demo website (optional bonus)
+├── css/style.css           # demo theme (paper & forest green)
 ├── js/
-│   ├── app.js              # prediction math, sliders, health verdicts, scroll reveals
-│   └── scene.js            # the three 3D scenes: car, battery fill, point cloud
+│   ├── app.js              # demo prediction math, sliders, verdicts
+│   └── scene.js            # demo 3D scenes (car, battery fill, point cloud)
 ├── assets/
-│   ├── model.json          # trained model — intercept, coefficients, ranges, metrics
-│   ├── points.json         # the 2,000 samples, exported for the 3D point cloud
-│   ├── ferrari.glb         # 3D car model (three.js examples, MIT) — Draco-compressed
-│   ├── vendor/draco/       # vendored Draco decoder (three.js r128, local — no CDN needed)
-│   ├── result_plot.png     # evaluation plot (actual vs predicted)
-│   └── screenshot.png      # full-page preview used in this README
-├── export_model.py         # re-exports model.json from the dataset
-├── crosscheck.py           # proves browser formula == sklearn (diff ~1e-14)
-├── README.md
-└── LICENSE
+│   ├── model.json          # a fitted demo model (exported from the same pipeline idea)
+│   ├── points.json         # 2,000 samples for the demo 3D cloud
+│   ├── ferrari.glb         # 3D car model (three.js examples, MIT)
+│   ├── vendor/draco/       # Draco decoder for the GLB (local, no CDN)
+│   ├── result_plot.png     # demo evaluation plot
+│   └── screenshot.png      # full-page preview of the demo
+├── export_model.py         # (demo) re-exports model.json from a dataset
+└── crosscheck.py           # (demo) proves the browser formula matches the fit
 ```
 
-## Regenerating the model data
+## 8. Interactive demo (website)
 
-`model.json` and `points.json` are generated from the companion repository [`ev-battery-health-prediction`](https://github.com/abhiramgangadharan07-crypto/ev-battery-health-prediction) (same pipeline, same `random_state=42`):
+As a bonus, the same repository ships a fully static website — **EV Battery Lab** — that lets anyone run a SoH diagnosis in their browser with a drag-spin 3D car, a live battery-fill visualisation and all samples as a rotatable point cloud.
 
-```bash
-python export_model.py      # rebuilds model.json + points.json
-python crosscheck.py         # prints MAX DIFFERENCE < 1e-9 if everything matches
-```
+Since a linear model is just one weighted sum, the fitted model ships as `assets/model.json` and the prediction runs **client-side** — no server, no uploads.
 
-## Deployment
+**Live demo:** https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/
 
-The site is hosted on **GitHub Pages** and rebuilds automatically whenever `main` is pushed:
+**Run it locally:** `python -m http.server 8000` and open `http://127.0.0.1:8000` (a plain `file://` double-click won't work — browsers block `fetch` on local files).
 
-```bash
-gh repo create ev-battery-health-site --public --source=. --push
-gh api repos/abhiramgangadharan07-crypto/ev-battery-health-site/pages -X POST \
-  -f "source[branch]=main" -f "source[path]=/"
-```
+> **Note on the demo model:** `assets/model.json` was exported from an earlier run of the same pipeline (10 features, 2,000-sample session). The **authoritative** model for this assignment is the one the notebook in section 3–5 produces on the 10,000-sample dataset.
 
-The live site is at **https://abhiramgangadharan07-crypto.github.io/ev-battery-health-site/**.
-
-## Troubleshooting
+## 9. Troubleshooting
 
 | Symptom | Cause & fix |
 | ------- | ----------- |
-| "The 3D car preview could not load." | Your browser has WebGL disabled, or an old cache from before the Draco fix. Enable WebGL (browser settings → hardware acceleration), or hard-refresh with Ctrl+F5 / Cmd+Shift+R. |
-| Page loads but 3D scenes are blank | WebGL blocked in the browser. Check `chrome://gpu` (Chrome) or `about:support` (Firefox) for WebGL status. |
-| Sliders don't move / verdict stays "Checking…" | JavaScript is disabled or a script failed. Open the console (F12) — a CDN script (`three.js`, `GLTFLoader`, `OrbitControls`) can be blocked by a proxy or ad-blocker; allow it for this site. |
-| Downloading the repo then opening `index.html` shows nothing | `fetch()` on `file://` is blocked by browsers — serve via `python -m http.server 8000` instead. |
-| Why is the prediction ±1 percentage point, not perfect? | SoH depends on many factors; a linear model captures the dominant linear trend but cannot model cell-to-cell manufacturing variation. R² 0.9967 on this structured dataset is excellent for a regression baseline. |
+| `AssertionError: No CSV file found` | The dataset is not inside `data/`. Download from Kaggle (link in section 2) and put the CSV there. |
+| `ModuleNotFoundError: sklearn` | `pip install -r requirements.txt` was not run, or a different Python environment is active. |
+| Notebook runs but the plot is missing | The notebook saves to `images/result_plot.png` from its own folder. Run it from the repo root. |
+| 3D car shows "could not load" on the demo site | WebGL disabled in the browser, or stale cache — enable hardware acceleration or hard-refresh (Ctrl+F5 / Cmd+Shift+R). |
 
 ## Author
 
@@ -214,17 +205,17 @@ The live site is at **https://abhiramgangadharan07-crypto.github.io/ev-battery-h
 [![GitHub](https://img.shields.io/badge/GitHub-abhiramgangadharan07--crypto-1C3A2E?style=for-the-badge&logo=github)](https://github.com/abhiramgangadharan07-crypto)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-abhiram--gangadharan-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/abhiram-gangadharan-a6282a379)
 [![Kaggle](https://img.shields.io/badge/Kaggle-abhiramgangadharan07-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/abhiramgangadharan07)
-[![Email](https://img.shields.io/badge/Email-abhiramgangadharan07@gmail.com-D95D3F?style=for-the-badge&logo=gmail)](mailto:abhiramgangadharan07@gmail.com)
+[![Email](https://img.shields.io/badge/Email-abhiramgangadharan07%40gmail.com-D95D3F?style=for-the-badge&logo=gmail)](mailto:abhiramgangadharan07@gmail.com)
 
 </div>
 
 ## License
 
-Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
+Distributed under the **MIT License**. See [LICENSE](LICENSE).
 
 ## Credits
 
-- **Dataset:** *Battery State of Health Dataset* by [freshersstaff](https://www.kaggle.com/datasets/freshersstaff/battery-state-of-health-dataset) (Kaggle, CC-BY-4.0 for the original research dataset — see the companion project for the offline-dataset note)
-- **Model & methodology:** [EV Battery Health Prediction](https://github.com/abhiramgangadharan07-crypto/ev-battery-health-prediction) (Linear Regression via scikit-learn)
-- **3D:** [Three.js](https://threejs.org/) (MIT); `ferrari.glb` from the [three.js examples](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf) (MIT); Draco decoder vendored from the three.js examples (MIT)
-- **Fonts:** Fraunces, Space Mono, Hanken Grotesk (Google Fonts, SIL OFL)
+- **Dataset:** Electric Vehicle (EV) Battery Degradation & Charge — Kaggle ([bertnardomariouskono](https://www.kaggle.com/datasets/bertnardomariouskono/electric-vehicle-ev-battery-degradation-and-charge))
+- **Model:** scikit-learn `LinearRegression`
+- **Demo 3D:** Three.js (MIT); `ferrari.glb` from the three.js examples (MIT)
+- **Demo fonts:** Fraunces, Space Mono, Hanken Grotesk (Google Fonts, OFL)
