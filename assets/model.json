@@ -1,0 +1,87 @@
+{
+ "model": "LinearRegression",
+ "intercept": 94.49836973616019,
+ "coefficients": {
+  "Cycle": -0.03222941594965118,
+  "Voltage": -0.09973086337765963,
+  "Current": -0.0638799487809587,
+  "Temperature": -0.022394712788908477,
+  "ChargeTime": -0.0009344806752324131,
+  "DischargeTime": -0.001422972976572623,
+  "InternalResistance": 2.3856037396882614,
+  "Capacity": -0.09717521863168363,
+  "AmbientHumidity": -0.0003375070399895437,
+  "C_Rate": 0.056219145690315366
+ },
+ "feature_order": [
+  "Cycle",
+  "Voltage",
+  "Current",
+  "Temperature",
+  "ChargeTime",
+  "DischargeTime",
+  "InternalResistance",
+  "Capacity",
+  "AmbientHumidity",
+  "C_Rate"
+ ],
+ "metrics": {
+  "r2": 0.9967296282923216,
+  "rmse": 1.0803765583874687,
+  "train_samples": 1600,
+  "test_samples": 400,
+  "total_samples": 2000
+ },
+ "feature_ranges": {
+  "Cycle": {
+   "min": 1.0,
+   "max": 2000.0,
+   "mean": 1000.5
+  },
+  "Voltage": {
+   "min": 3.000289205622161,
+   "max": 4.199352817271608,
+   "mean": 3.592491066555508
+  },
+  "Current": {
+   "min": 0.5000460782680736,
+   "max": 1.9993365548756576,
+   "mean": 1.2366964618042493
+  },
+  "Temperature": {
+   "min": 9.902439220895872,
+   "max": 40.965537839224304,
+   "mean": 25.281789453520936
+  },
+  "ChargeTime": {
+   "min": 30.00475442390671,
+   "max": 119.87555872479462,
+   "mean": 74.09427241182371
+  },
+  "DischargeTime": {
+   "min": 30.021678706607982,
+   "max": 119.9705884717883,
+   "mean": 75.2106906528072
+  },
+  "InternalResistance": {
+   "min": 0.0465160426874402,
+   "max": 0.2519322506510606,
+   "mean": 0.1499859796322368
+  },
+  "Capacity": {
+   "min": 1.4604270175096297,
+   "max": 2.521192285182002,
+   "mean": 1.9999611205434344
+  },
+  "AmbientHumidity": {
+   "min": 30.03414789749613,
+   "max": 69.96598267114635,
+   "mean": 50.48357268106443
+  },
+  "C_Rate": {
+   "min": 0.5009174527333806,
+   "max": 1.9998071574112009,
+   "mean": 1.2646437984001062
+  }
+ }
+}

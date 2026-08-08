@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EV Battery Lab — State of Health Predictor</title>
+  <meta name="description" content="An interactive State of Health (SoH) predictor for EV batteries, trained on 2,000 real samples with linear regression. R² 0.9967 · RMSE 1.08." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Hanken+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ================= NAV ================= -->
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="EV Battery Lab home">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect x="4" y="9" width="24" height="22" rx="2.5" stroke="#1C3A2E" stroke-width="2.5" fill="#F6F1E7"/>
+          <rect x="7.5" y="12.5" width="17" height="8" fill="#3FBF5F"/>
+          <rect x="30.5" y="16" width="5" height="8" rx="1.2" fill="#1C3A2E"/>
+          <path d="M10 34h12" stroke="#1C3A2E" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">EV Battery <em>Lab</em></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#predictor">Diagnosis</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#model">Model</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="hero-tag reveal"><span class="dot"></span> State of Health &middot; Regression study</span>
+          <h1 class="reveal reveal-d1">The battery keeps a <em class="accent-italic">diary</em>. We translate it.</h1>
+          <p class="lead reveal reveal-d2">
+            Every charge cycle writes itself into the pack as a tiny loss of capacity. This
+            model reads <strong>2,000 real EV battery samples</strong> and predicts the
+            remaining <strong>State of Health (SoH)</strong> from ten everyday sensor
+            readings — to within about one percentage point.
+          </p>
+          <div class="hero-cta reveal reveal-d3">
+            <a class="btn btn-primary" href="#predictor">Run a diagnosis</a>
+            <a class="btn" href="#model">Read the model</a>
+          </div>
+          <div class="hero-stats reveal reveal-d3" data-counters>
+            <div class="hero-stat"><div class="num" data-count="0.9967">0.9967</div><div class="lbl">R&sup2; score</div></div>
+            <div class="hero-stat"><div class="num" data-count="1.0804">1.0804</div><div class="lbl">RMSE (pp)</div></div>
+            <div class="hero-stat"><div class="num" data-count="2000">2000</div><div class="lbl">Samples</div></div>
+          </div>
+        </div>
+
+        <div class="stage stage-corner reveal reveal-d2" id="car-stage">
+          <canvas id="car-canvas"></canvas>
+          <div class="stage-hint"><span class="cur">&#8635;</span> Drag to inspect &middot; 360&deg;</div>
+          <div class="stage-loader">
+            <div>Loading the car model&hellip;</div>
+            <div class="bar"><span></span></div>
+          </div>
+          <div class="glb-fallback">
+            <div>
+              <div style="font-size:3rem;margin-bottom:10px">&#128663;</div>
+              The 3D car preview could not load.<br/>The rest of the site still works.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ticker -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>State of health <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+        <span>End of life @ 80% <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#E8A13C"/></svg></span>
+        <span>2,000 samples <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#3FBF5F"/></svg></span>
+        <span>R&sup2; 0.9967 <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+        <span>RMSE 1.08 <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#E8A13C"/></svg></span>
+        <span>Linear regression <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#3FBF5F"/></svg></span>
+        <span>Cycle &middot; Voltage &middot; Temperature <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+        <span>State of health <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+        <span>End of life @ 80% <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#E8A13C"/></svg></span>
+        <span>2,000 samples <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#3FBF5F"/></svg></span>
+        <span>R&sup2; 0.9967 <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+        <span>RMSE 1.08 <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#E8A13C"/></svg></span>
+        <span>Linear regression <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#3FBF5F"/></svg></span>
+        <span>Cycle &middot; Voltage &middot; Temperature <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11L9.5 22 19.5 10H13L15 2Z" fill="#D95D3F"/></svg></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= PREDICTOR ================= -->
+  <section id="predictor">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">01 &middot; Diagnosis</span>
+        <h2>Run a diagnosis on any pack</h2>
+        <p>
+          Set the ten readings the way you&rsquo;d see them from the battery management
+          system. The model predicts SoH instantly in your browser — no server, no
+          upload, nothing leaves this page.
+        </p>
+      </div>
+
+      <div class="predictor-grid">
+        <div class="panel reveal">
+          <span class="panel-tag">Field readings</span>
+          <div class="slider-list" id="slider-list"></div>
+          <div class="form-actions"></div>
+        </div>
+
+        <div class="diag reveal reveal-d2">
+          <div class="panel">
+            <span class="panel-tag">Verdict</span>
+            <canvas id="battery-canvas"></canvas>
+            <div class="soh-big" id="soh-big">--.-</div>
+            <div class="soh-unit">PREDICTED STATE OF HEALTH</div>
+            <div class="badge" id="health-badge"><span class="bdot"></span>Checking&hellip;</div>
+            <p class="diag-note" id="diag-note"></p>
+          </div>
+          <div class="diag-scale">
+            <div class="good">Excellent &ge; 90</div>
+            <div class="mid">Good 80&ndash;90</div>
+            <div class="bad">End of life &lt; 80</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DATA ================= -->
+  <section id="data">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">02 &middot; The data</span>
+        <h2>2,000 batteries, one cloud of truth</h2>
+        <p>
+          Every point below is a real battery sample from the Kaggle
+          <em>Battery State of Health Dataset</em>. Rotate the cloud yourself —
+          color runs from healthy (green) to heavily aged (terracotta).
+        </p>
+      </div>
+
+      <div class="cloud-stage stage-corner reveal">
+        <canvas id="cloud-canvas"></canvas>
+      </div>
+
+      <div class="axis-legend reveal">
+        <span><span class="sw sw-cycle"></span>Cycle (0&ndash;2,000)</span>
+        <span><span class="sw sw-temp"></span>Temperature &deg;C</span>
+        <span><span class="sw sw-soh"></span>State of Health %</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODEL ================= -->
+  <section id="model">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">03 &middot; The model</span>
+        <h2>Methodology, written in plain terms</h2>
+        <p>
+          A textbook regression pipeline, explained cell by cell in the companion
+          notebook <span class="mono">analysis.ipynb</span>.
+        </p>
+      </div>
+
+      <div class="steps">
+        <div class="step reveal" data-n="01"><h3>Load</h3><p>Read the CSV with pandas and verify the shape.</p></div>
+        <div class="step reveal reveal-d1" data-n="02"><h3>Inspect</h3><p>Check data types and column names before modelling.</p></div>
+        <div class="step reveal reveal-d2" data-n="03"><h3>Clean</h3><p>Drop rows with missing values — no empty cells feed the model.</p></div>
+        <div class="step reveal reveal-d3" data-n="04"><h3>Encode</h3><p>Drop ID columns, one-hot any text, keep only numbers.</p></div>
+        <div class="step reveal" data-n="05"><h3>Split</h3><p>80% trains, 20% stays untouched as the honest test set.</p></div>
+        <div class="step reveal reveal-d1" data-n="06"><h3>Train</h3><p>Fit LinearRegression — one line, least squares math inside.</p></div>
+        <div class="step reveal reveal-d2" data-n="07"><h3>Evaluate</h3><p>Score with R&sup2; and RMSE on the unseen 20%.</p></div>
+        <div class="step reveal reveal-d3" data-n="08"><h3>Visualise</h3><p>Plot predicted vs actual SoH against the perfect line.</p></div>
+      </div>
+
+      <div class="results-grid" style="margin-top:90px">
+        <div class="metric reveal">
+          <span class="lbl">R-squared &middot; goodness of fit</span>
+          <span class="num">0.9967<small> / 1.0</small></span>
+          <p class="lead" style="font-size:.95rem">The model explains <strong>99.67%</strong> of the variation in battery health.</p>
+        </div>
+        <div class="metric reveal reveal-d1">
+          <span class="lbl">RMSE &middot; average error</span>
+          <span class="num">1.08<small> pp</small></span>
+          <p class="lead" style="font-size:.95rem">Typical predictions land within <strong>&plusmn;1 percentage point</strong> of true SoH.</p>
+        </div>
+        <figure class="plot-wrap reveal reveal-d2">
+          <img src="assets/result_plot.png" alt="Actual vs predicted State of Health scatter plot" />
+          <figcaption>
+            <span>Actual vs predicted SoH &mdash; test set</span>
+            <span>diagonal = perfect</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="sec-tag">04 &middot; About</span>
+        <h2>The dataset &amp; what each knob does</h2>
+      </div>
+
+      <div class="about-grid">
+        <div class="reveal">
+          <p>
+            The model was trained on the <strong>Battery State of Health Dataset</strong>
+            (Kaggle): 2,000 multi-cycle battery samples with ten sensor features and a
+            measured <strong>SOH</strong> target — 100% when new, down to ~28% when
+            heavily aged.
+          </p>
+          <p>
+            Because each feature is a continuous number, the whole prediction reduces to a
+            single weighted sum — which is exactly why this site can run the model in your
+            browser with zero backend.
+          </p>
+          <div class="note-box">
+            <span class="mono" style="color:var(--terra-deep)">Note</span> — the originally
+            assigned dataset (EV Battery Degradation &amp; Charge, ~10,000 samples) was taken
+            offline by its owner in 2026. This directly comparable SoH dataset keeps the
+            project fully runnable; methodology and code are unchanged.
+          </div>
+          <div style="margin-top:26px">
+            <a class="btn" href="https://www.kaggle.com/datasets/freshersstaff/battery-state-of-health-dataset" target="_blank" rel="noopener">Get the dataset on Kaggle</a>
+          </div>
+        </div>
+
+        <div class="reveal reveal-d1">
+          <table class="coef-table">
+            <thead>
+              <tr><th>Feature</th><th>&beta; coefficient</th><th>Pull on SoH</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>Cycle</td><td>-0.032229</td><td class="neg">ages the pack</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>Voltage</td><td>-0.099731</td><td class="neg">slightly ages</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>Current</td><td>-0.063880</td><td class="neg">slightly ages</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>Temperature</td><td>-0.022395</td><td class="neg">heat ages</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>ChargeTime</td><td>-0.000934</td><td class="na">negligible</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>DischargeTime</td><td>-0.001423</td><td class="na">negligible</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8593;</span>InternalResistance</td><td>+2.385604</td><td class="pos">raises estimate</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>Capacity</td><td>-0.097175</td><td class="neg">slightly ages</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8595;</span>AmbientHumidity</td><td>-0.000338</td><td class="na">negligible</td></tr>
+              <tr><td class="name-cell"><span class="arrow">&#8593;</span>C_Rate</td><td>+0.056219</td><td class="pos">raises estimate</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:16px;font-size:.85rem;color:var(--ink-60)">
+            Full precision coefficients, exported straight from the trained
+            <span class="mono">sklearn</span> model.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div class="wrap foot-grid">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect x="4" y="9" width="24" height="22" rx="2.5" stroke="#1C3A2E" stroke-width="2.5" fill="#F6F1E7"/>
+          <rect x="7.5" y="12.5" width="17" height="8" fill="#3FBF5F"/>
+          <rect x="30.5" y="16" width="5" height="8" rx="1.2" fill="#1C3A2E"/>
+          <path d="M10 34h12" stroke="#1C3A2E" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">EV Battery <em>Lab</em></span>
+      </div>
+      <div class="foot-note">
+        Built from 2,000 real battery samples &middot; <span id="year"></span><br/>
+        3D car: <em>ferrari.glb</em> from the three.js examples (MIT) &middot; Three.js scenes by this project
+      </div>
+    </div>
+  </footer>
+
+  <!-- three.js r128 + example loaders -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
