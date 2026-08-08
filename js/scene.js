@@ -157,6 +157,11 @@
     api.scene.add(ring);
 
     const loader = new THREE.GLTFLoader();
+    if (THREE.DRACOLoader) {
+      const draco = new THREE.DRACOLoader();
+      draco.setDecoderPath("assets/vendor/draco/");
+      loader.setDRACOLoader(draco);
+    }
     loader.load(
       "assets/ferrari.glb",
       (gltf) => {
